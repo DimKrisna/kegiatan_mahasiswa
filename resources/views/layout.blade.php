@@ -168,21 +168,6 @@
                                         case 2: // Kemahasiswaan
                                             $homeRoute = 'kemahasiswaan.home';
                                             break;
-                                        case 3: // Wakil Rektor 3
-                                            $homeRoute = 'rektorat.home';
-                                            break;
-                                        case 4: // Fakultas Bishum
-                                            $homeRoute = 'fakultas.fakultas.home';
-                                            break;
-                                        case 5: // Prodi
-                                            $homeRoute = 'prodi.home';
-                                            break;
-                                        case 6: // Fakultas Saintek
-                                            $homeRoute = 'fakultas.fakultas.home';
-                                            break;
-                                        case 7: // Sekretaris Rektor
-                                            $homeRoute = 'fakultas.fakultas.home';
-                                            break;
                                         default:
                                             $homeRoute = 'login';
                                             break;
@@ -196,53 +181,54 @@
                             </a>
                         </li>
 
-                        @foreach ($menus as $list)
-                            <!-- Judul kategori -->
-                            <li class="slide__category">
-                                <span class="category-name">{{ $list->menu_kategori }}</span>
+    @foreach ($menus as $list)
+        <!-- Judul kategori -->
+        <li class="slide__category">
+            <span class="category-name">{{ $list->menu_kategori }}</span>
+        </li>
+
+        @foreach ($list->list as $item)
+            @php
+                // Cek apakah ada sub yang aktif
+                $hasActiveSub = collect($item->sub)->contains(function ($sub) {
+                    return $sub->sub_url && request()->is(trim($sub->sub_url, '/') . '*');
+                });
+
+                // Cek parent aktif
+                $isActiveParent = ($item->url && request()->is(trim($item->url, '/') . '*')) || $hasActiveSub;
+            @endphp
+
+            <li class="slide {{ count($item->sub) > 0 ? 'has-sub' : '' }} {{ $isActiveParent ? 'open is-expanded' : '' }}">
+                <a href="{{ $item->url && $item->url != '#' ? url($item->url) : 'javascript:void(0)' }}"
+                   class="side-menu__item {{ $isActiveParent ? 'active' : '' }}">
+                    <i class="{{ $item->icon }} sidemenu_icon"></i>
+                    <span class="side-menu__label">{{ $item->menu }}</span>
+
+                    @if (count($item->sub) > 0)
+                        <i class="fe fe-chevron-right side-menu__angle"></i>
+                    @endif
+                </a>
+
+                @if (count($item->sub) > 0)
+                    <ul class="slide-menu child1" style="{{ $isActiveParent ? 'display:block;' : '' }}">
+                        @foreach ($item->sub as $sub)
+                            <li class="slide">
+                                <a href="{{ $sub->sub_url && $sub->sub_url != '#' ? url($sub->sub_url) : 'javascript:void(0)' }}"
+                                   class="side-menu__item {{ $sub->sub_url && request()->is(trim($sub->sub_url, '/') . '*') ? 'active' : '' }}">
+                                    {{ $sub->sub_menu }}
+                                </a>
                             </li>
-
-                            @foreach ($list->list as $item)
-                                @php
-                                    // Cek apakah ada sub yang aktif
-                                    $hasActiveSub = collect($item->sub)->contains(function ($sub) {
-                                        return $sub->sub_url && request()->is(trim($sub->sub_url, '/') . '*');
-                                    });
-
-                                    // Cek parent aktif
-                                    $isActiveParent =
-                                        ($item->url && request()->is(trim($item->url, '/') . '*')) || $hasActiveSub;
-                                @endphp
-
-                                <li
-                                    class="slide {{ count($item->sub) > 0 ? 'has-sub' : '' }} {{ $isActiveParent ? 'open is-expanded' : '' }}">
-                                    <a href="{{ $item->url && $item->url != '#' ? url($item->url) : 'javascript:void(0)' }}"
-                                        class="side-menu__item {{ $isActiveParent ? 'active' : '' }}">
-                                        <i class="{{ $item->icon }} sidemenu_icon"></i>
-                                        <span class="side-menu__label">{{ $item->menu }}</span>
-
-                                        @if (count($item->sub) > 0)
-                                            <i class="fe fe-chevron-right side-menu__angle"></i>
-                                        @endif
-                                    </a>
-
-                                    @if (count($item->sub) > 0)
-                                        <ul class="slide-menu child1"
-                                            style="{{ $isActiveParent ? 'display:block;' : '' }}">
-                                            @foreach ($item->sub as $sub)
-                                                <li class="slide">
-                                                    <a href="{{ $sub->sub_url && $sub->sub_url != '#' ? url($sub->sub_url) : 'javascript:void(0)' }}"
-                                                        class="side-menu__item {{ $sub->sub_url && request()->is(trim($sub->sub_url, '/') . '*') ? 'active' : '' }}">
-                                                        {{ $sub->sub_menu }}
-                                                    </a>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    @endif
-                                </li>
-                            @endforeach
                         @endforeach
                     </ul>
+                @endif
+            </li>
+        @endforeach
+    @endforeach
+
+
+                    </ul>
+
+
                     <div class="slide-right" id="slide-right"><svg xmlns="http://www.w3.org/2000/svg" fill="#7b8191"
                             width="24" height="24" viewBox="0 0 24 24">
                             <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z"></path>
@@ -301,3 +287,83 @@
 </body>
 
 </html>
+<!-- Modal Ganti Password -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ route('reset.password') }}">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordLabel">Ganti Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Password Lama</label>
+                        <div class="input-group">
+                            <input type="password" name="current_password" id="current_password"
+                                class="form-control" required>
+                            <button class="btn toggle-password" type="button" data-target="current_password">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">Password Baru</label>
+                        <div class="input-group">
+                            <input type="password" name="new_password" id="new_password" class="form-control"
+                                required>
+                            <button class="btn toggle-password" type="button" data-target="new_password">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="new_password_confirmation" class="form-label">Konfirmasi Password Baru</label>
+                        <div class="input-group">
+                            <input type="password" name="new_password_confirmation" id="new_password_confirmation"
+                                class="form-control" required>
+                            <button class="btn toggle-password" type="button"
+                                data-target="new_password_confirmation">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const toggleButtons = document.querySelectorAll(".toggle-password");
+
+        toggleButtons.forEach(function(button) {
+            button.addEventListener("click", function() {
+                const targetId = this.getAttribute("data-target");
+                const input = document.getElementById(targetId);
+                const icon = this.querySelector("i");
+
+                if (input.type === "password") {
+                    input.type = "text";
+                    icon.classList.remove("fa-eye");
+                    icon.classList.add("fa-eye-slash");
+                } else {
+                    input.type = "password";
+                    icon.classList.remove("fa-eye-slash");
+                    icon.classList.add("fa-eye");
+                }
+            });
+        });
+    });
+</script>

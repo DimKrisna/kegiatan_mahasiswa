@@ -46,31 +46,6 @@ class Layout extends Component
                     $query->where('status', 'Aktif');
                 }, 'list.sub'])->find(1);
             }
-            if (in_array(3, $menu)) { // Wakil Rektor 3
-                $menus[] = MnKategori::with(['list' => function ($query) {
-                    $query->where('status', 'Aktif');
-                }, 'list.sub'])->find(4);
-            }
-            if (in_array(4, $menu)) { // Fakultas Bishum
-                $menus[] = MnKategori::with(['list' => function ($query) {
-                    $query->where('status', 'Aktif');
-                }, 'list.sub'])->find(3);
-            }
-            if (in_array(5, $menu)) { // Prodi
-                $menus[] = MnKategori::with(['list' => function ($query) {
-                    $query->where('status', 'Aktif');
-                }, 'list.sub'])->find(2);
-            }
-            if (in_array(6, $menu)) { // Fakultas Saintek
-                $menus[] = MnKategori::with(['list' => function ($query) {
-                    $query->where('status', 'Aktif');
-                }, 'list.sub'])->find(3);
-            }
-            if (in_array(7, $menu)) { // Fakultas Sekretaris Rektor
-                $menus[] = MnKategori::with(['list' => function ($query) {
-                    $query->where('status', 'Aktif');
-                }, 'list.sub'])->find(6);
-            }
         }
         return view('layout', compact('menus'));
     }
